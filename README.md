@@ -1,4 +1,3 @@
-### A tiny redis client for Node.js.
--
-
+### A tiny redis client for Node.js.  
+   
 updating!
