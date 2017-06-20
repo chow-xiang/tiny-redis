@@ -5,8 +5,8 @@ for example:
     'use strict';
 
     var RedisClient = require('../client');
-    var client      = new RedisClient('10.100.150.31', 6443);
-    var pub         = new RedisClient('10.100.150.31', 6443);
+    var client      = new RedisClient();
+    var pub         = new RedisClient();
 
     // set 
     client.command('set test2 666', reply => {
