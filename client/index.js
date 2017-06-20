@@ -57,18 +57,31 @@ class RedisClient extends EventEmiter{
 	}
 	// push reply
 	returnReply (reply){
-		var cmd = this._cmds.shift();
-		cmd.cb && cmd.cb(reply);
+		if(reply[0] == 'message'){
+			reply.shift();
+			this.emit('message', reply)
+		}else{
+			var cmd = this._cmds.shift();
+			cmd.cb && cmd.cb(reply);
+		}
 	}
 	// push cmd
-	commond (cmd, cb) {
+	command (cmd, cb) {
 
 		var readyState = this.redisCnt.readyState;
 		this._cmds.push({cmd, cb});
 
-		if(readyState == 'open'){ // 如果已连接直接发送
+		if(this._connected && readyState == 'open'){ // 如果已连接直接发送
 			this.redisCnt.write(`${cmd}\r\n`);
 		}
+	}
+
+	subscribe(cmd, cb) {
+		this.command(`subscribe ${cmd}`, cb);
+	}
+
+	publish(cmd, msg, cb){
+		this.command(`publish ${cmd} ${msg}`, cb);
 	}
 }
 
