@@ -4,6 +4,8 @@ var {ClusterClient} = require('../');
 
 var cluster = new ClusterClient([
 	{
+		host: '127.0.0.1',
+		port: 6379,
 		cb: function (client) {
 			console.log(1)
 		}
