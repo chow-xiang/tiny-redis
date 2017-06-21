@@ -4,4 +4,3 @@ node_modules
 .vscode
 /demo
 /lib/index.js
-/parser
