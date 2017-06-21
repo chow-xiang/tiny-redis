@@ -4,7 +4,7 @@ for example:
 
     'use strict';
 
-    var RedisClient = require('../client');
+    var {RedisClient, ClusterClient} = require('../client');
     var client      = new RedisClient();
     var pub         = new RedisClient();
 
@@ -44,8 +44,6 @@ for example:
         pub.publish('redisChat1', '"Hello world"', reply => {
             console.log(reply)
         });
-
-        
     })
 
     client.subscribe('redisChat2', reply => {
@@ -64,9 +62,19 @@ for example:
 
 
     // if cluster
-    // client
-    // .command('get test2')
-    // .then(reply => {console.log(reply)})
-    // .moved()
-    // // .then(reply => console.log(reply))
+    var cluster = new ClusterClient([
+        {
+            host: '127.0.0.1',
+            port: 6379,
+            cb: function (client) {
+                console.log(1)
+            }
+        },
+    ])
+
+
+    // set 
+    cluster.command('set test2 666', (e, reply) => {
+        console.log('set test2 666:' + reply);
+    });
 
