@@ -1,32 +1,31 @@
 'use strict';
 
-var EventEmiter   = require('events');
-var net           = require('net');
-var RedisParser   = require('redis-parser');
-var {formatReply} = require('../lib');
+var EventEmiter    = require('events');
+var net            = require('net');
+var clientHandlers = require('../lib/handler/client');
 
 class RedisClient extends EventEmiter{
 
-	constructor (host='127.0.0.1', port=6379, cb){
+	constructor (
+		host='127.0.0.1', 
+		port=6379, 
+		cb,
+		handlers = clientHandlers
+	){
 
 		super();
 
 		// property
+		this._cmds      = [];    // 缓存的cmd
 		this.address    = `${host}:${port}`;
 		this._connected = false; // 是否在链接
-		this._cmds      = [];    // 缓存的cmd
+		var {dataHandler, connectError, connectClose}  = handlers;
 
 		// init connection
 		this.redisCnt = net.connect({host, port}, () => {
+			cb && cb(this);
 			this._connected = true;
-			// 发送缓存的cmd
-			this._cmds.forEach(cmd => this.redisCnt.write(`${cmd.cmd}\r\n`));
-		})
-
-		// init parser
-		this._parser = new RedisParser({
-			returnError: this.returnError.bind(this),
-		    returnReply: this.returnReply.bind(this)
+			this._cmds.forEach(cmd => this.redisCnt.write(`${cmd.cmd}\r\n`)); // 发送缓存的cmd
 		});
 
 		// options 
@@ -34,46 +33,12 @@ class RedisClient extends EventEmiter{
 		this.redisCnt.setNoDelay(true);
 		// this.redisCnt.setTimeout(10000, () => {  });
 
-		this.redisCnt.on('error', this.connectError);
-		this.redisCnt.on('close', this.redisClose);
-		this.redisCnt.on('data', this.getData(this));
-	}
-	// get data
-	getData (client){
-		return function (ret) {
-			client._parser.execute(ret);
-		}
-	}
-	// redis close
-	redisClose (){
-		this._connected = false;
-	}
-	// connect error
-	connectError (err){
-		this._connected = false;
-	}
-	// returnError
-	returnError (err) {
-		var cmd = this._cmds.shift();
-		cmd.cb && cmd.cb(err);
-	}
-	// push reply
-	returnReply (reply){
-		if(reply[0] == 'message'){
-			reply.shift();
-			this.emit('message', reply);
-		}else{
-			var cmd = this._cmds.shift();
-			cmd.cb && cmd.cb(null, reply);
-		}
-	}
-	afterSub (){
-		// 发送缓存的cmd
-		this._cmds.forEach(cmd => this.redisCnt.write(`${cmd.cmd}\r\n`));
+		this.redisCnt.on('data', dataHandler(this));
+		this.redisCnt.on('error', connectError(this));
+		this.redisCnt.on('close', connectClose(this));
 	}
 	// push cmd
 	command (cmd, cb) {
-
 		var readyState = this.redisCnt.readyState;
 		this._cmds.push({cmd, cb});
 
@@ -81,17 +46,14 @@ class RedisClient extends EventEmiter{
 			this.redisCnt.write(`${cmd}\r\n`);
 		}
 	}
-
+	// sub
 	subscribe(cmd, cb) {
 		this.command(`subscribe ${cmd}`, cb);
 	}
-
+	// pub
 	publish(cmd, msg, cb){
 		this.command(`publish ${cmd} ${msg}`, cb);
 	}
 }
 
-
 module.exports = RedisClient;
-
-

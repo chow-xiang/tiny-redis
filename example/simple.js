@@ -1,8 +1,8 @@
 'use strict';
 
-var RedisClient = require('../client');
+var {RedisClient} = require('../');
 var client      = new RedisClient();
-var pub         = new RedisClient();
+
 
 // set 
 client.command('set test2 666', (e, reply) => {
@@ -15,6 +15,10 @@ client.command('get test2', (e, reply) => {
 
 	client.command('get test', (e, ret) => {
 		console.log('callback get test2:' + ret);
+
+		client.command('get test', (e, ret) => {
+			console.log('callback2 get test2:' + ret);
+		})
 	})
 });
 

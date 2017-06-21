@@ -6,8 +6,7 @@
 * Because client is subscribe mode, cannot issue any commands other than subscribe, psubscribe, unsubscribe, punsubscribe.
 */
 
-
-var RedisClient = require('../client');
+var {RedisClient} = require('../');
 var client      = new RedisClient();
 var pub         = new RedisClient();
 
@@ -22,7 +21,7 @@ client.subscribe('redisChat1', (e, reply) => {
 	});
 
 	client.command('get test', (e, ret) => {
-		console.log(e.stack)
+		console.log(e.message)
 	})
 })
 
@@ -30,4 +29,3 @@ client.subscribe('redisChat1', (e, reply) => {
 client.on('message', reply => {
 	console.log(reply[1])
 })
-
