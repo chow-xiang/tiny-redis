@@ -15,26 +15,22 @@ for example:
 
     // get
     client.command('get test2', reply => {
-        console.log('get test2:' + reply);
+        console.log('get test2:' + reply); // '666'
     });
 
     // hmset
-    client.command('hmset test1 a "dddddd" b "ddddddd"', reply => {
-        console.log('hmset:' + reply);
+    client.command('hmset test1 a "a" b "b"', reply => {
+        console.log('hmset:' + reply);  
     });
 
     // hmget
-    client.command('hmget test1 a b', reply => {
-        console.log('hmget:' + reply);
-
-        client.command('get test2', ret => {
-            console.log('callback get test2:' + ret);
-        })
+    client.command('hmget a b', reply => {
+        console.log('hmget:' + reply);      // ['a', 'b']
     });
 
     // keys
     client.command('keys *', reply => {
-        console.log(reply);
+        console.log(reply);      // ['a', 'b', 'test1', 'test2' ...]
     });
 
 
@@ -56,7 +52,7 @@ for example:
 
 
     client.on('message', reply => {
-        console.log(reply[1])
+        console.log(reply[1])          // {'redisChat1': 'Hello world'}, {'redisChat2': 'Hello world'}
     })
 
 
@@ -72,9 +68,4 @@ for example:
         },
     ])
 
-
-    // set 
-    cluster.command('set test2 666', (e, reply) => {
-        console.log('set test2 666:' + reply);
-    });
 
